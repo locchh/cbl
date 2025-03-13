@@ -1,0 +1,1027 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "COBOL 85 Grammar Schema",
+  "description": "JSON Schema representation of the COBOL 85 grammar defined in Cobol85.g4",
+  "type": "object",
+  "definitions": {
+    "programUnit": {
+      "title": "COBOL Program Unit",
+      "description": "A complete COBOL program consisting of four divisions: Identification, Environment, Data, and Procedure. A program unit is the basic building block of a COBOL application and may contain nested programs.",
+      "type": "object",
+      "required": ["identificationDivision"],
+      "properties": {
+        "identificationDivision": { 
+          "title": "Identification Division",
+          "description": "The first division of a COBOL program that identifies the program and provides metadata such as author, date written, etc.",
+          "$ref": "#/definitions/identificationDivision" 
+        },
+        "environmentDivision": { 
+          "title": "Environment Division",
+          "description": "Specifies the equipment and features used by the program. It describes the computer environment where the program will run and the files it will use.",
+          "$ref": "#/definitions/environmentDivision" 
+        },
+        "dataDivision": { 
+          "title": "Data Division",
+          "description": "Defines the data used by the program, including file structures, working storage, and linkage sections.",
+          "$ref": "#/definitions/dataDivision" 
+        },
+        "procedureDivision": { 
+          "title": "Procedure Division",
+          "description": "Contains the executable statements of a COBOL program. This division is where the actual processing logic is defined.",
+          "$ref": "#/definitions/procedureDivision" 
+        },
+        "nestedPrograms": {
+          "title": "Nested Programs",
+          "description": "Child programs contained within the current program unit. Nested programs can access data from their parent programs.",
+          "type": "array",
+          "items": { "$ref": "#/definitions/programUnit" }
+        },
+        "endProgram": {
+          "title": "End Program Statement",
+          "description": "Marks the end of a program unit with the END PROGRAM statement followed by the program name.",
+          "type": "object",
+          "required": ["programName"],
+          "properties": {
+            "programName": { 
+              "title": "Program Name",
+              "description": "The name of the program being terminated, which must match the name in the PROGRAM-ID paragraph.",
+              "type": "string" 
+            }
+          }
+        }
+      }
+    },
+    
+    "identificationDivision": {
+      "title": "Identification Division",
+      "description": "The first division of a COBOL program that identifies the program and provides metadata such as author, date written, etc.",
+      "type": "object",
+      "required": ["programId"],
+      "properties": {
+        "programId": {
+          "type": "object",
+          "required": ["programName"],
+          "properties": {
+            "programName": { "type": "string" },
+            "programType": {
+              "type": "string",
+              "enum": ["COMMON", "INITIAL", "LIBRARY", "DEFINITION", "RECURSIVE"]
+            },
+            "commentEntry": { "type": "string" }
+          }
+        },
+        "author": { "type": "string" },
+        "installation": { "type": "string" },
+        "dateWritten": { "type": "string" },
+        "dateCompiled": { "type": "string" },
+        "security": { "type": "string" },
+        "remarks": { "type": "string" }
+      }
+    },
+    
+    "environmentDivision": {
+      "type": "object",
+      "properties": {
+        "configurationSection": {
+          "type": "object",
+          "properties": {
+            "sourceComputer": {
+              "type": "object",
+              "properties": {
+                "computerName": { "type": "string" },
+                "debuggingMode": { "type": "boolean" }
+              }
+            },
+            "objectComputer": {
+              "type": "object",
+              "properties": {
+                "computerName": { "type": "string" },
+                "memorySize": {
+                  "type": "object",
+                  "properties": {
+                    "size": { "type": ["integer", "string"] },
+                    "unit": {
+                      "type": "string",
+                      "enum": ["WORDS", "CHARACTERS", "MODULES"]
+                    }
+                  }
+                },
+                "diskSize": {
+                  "type": "object",
+                  "properties": {
+                    "size": { "type": ["integer", "string"] },
+                    "unit": {
+                      "type": "string",
+                      "enum": ["WORDS", "MODULES"]
+                    }
+                  }
+                },
+                "collatingSequence": {
+                  "type": "object",
+                  "properties": {
+                    "alphabetNames": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    },
+                    "alphanumeric": { "type": "string" },
+                    "national": { "type": "string" }
+                  }
+                },
+                "segmentLimit": { "type": "integer" },
+                "characterSet": { "type": "boolean" }
+              }
+            },
+            "specialNames": {
+              "type": "object",
+              "properties": {
+                "alphabetClauses": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "alphabetName": { "type": "string" },
+                      "alphabetType": {
+                        "type": "string",
+                        "enum": ["STANDARD-1", "STANDARD-2", "NATIVE", "EBCDIC"]
+                      },
+                      "literals": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "literal": { "type": "string" },
+                            "through": { "type": "string" },
+                            "also": {
+                              "type": "array",
+                              "items": { "type": "string" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "classClauses": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "className": { "type": "string" },
+                      "classType": {
+                        "type": "string",
+                        "enum": ["ALPHANUMERIC", "NATIONAL"]
+                      },
+                      "ranges": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "from": { "type": "string" },
+                            "through": { "type": "string" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "currencySign": { "type": "string" },
+                "decimalPoint": { "type": "string" },
+                "symbolicCharacters": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "symbolicCharacters": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                      },
+                      "literals": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                      },
+                      "inAlphabet": { "type": "string" }
+                    }
+                  }
+                },
+                "environmentSwitches": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "environmentName": { "type": "string" },
+                      "mnemonicName": { "type": "string" },
+                      "statusValues": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "status": {
+                              "type": "string",
+                              "enum": ["ON", "OFF"]
+                            },
+                            "statusName": { "type": "string" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "inputOutputSection": {
+          "type": "object",
+          "properties": {
+            "fileControlParagraph": {
+              "type": "object",
+              "properties": {
+                "fileControlEntries": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["fileName"],
+                    "properties": {
+                      "fileName": { "type": "string" },
+                      "assignTo": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                      },
+                      "organization": {
+                        "type": "string",
+                        "enum": ["LINE", "RECORD", "BINARY", "SEQUENTIAL", "INDEXED", "RELATIVE"]
+                      },
+                      "accessMode": {
+                        "type": "string",
+                        "enum": ["SEQUENTIAL", "RANDOM", "DYNAMIC"]
+                      },
+                      "recordKey": {
+                        "type": "object",
+                        "properties": {
+                          "dataName": { "type": "string" },
+                          "passwordDataName": { "type": "string" }
+                        }
+                      },
+                      "alternateRecordKeys": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "dataName": { "type": "string" },
+                            "passwordDataName": { "type": "string" },
+                            "duplicates": { "type": "boolean" }
+                          }
+                        }
+                      },
+                      "fileStatus": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "ioControlParagraph": {
+              "type": "object",
+              "properties": {
+                "rerunClauses": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "rerunEvery": {
+                        "type": "object",
+                        "properties": {
+                          "records": { "type": "integer" },
+                          "clock": { "type": "string" },
+                          "endOfReel": {
+                            "type": "object",
+                            "properties": {
+                              "fileName": { "type": "string" }
+                            }
+                          }
+                        }
+                      },
+                      "onFileName": { "type": "string" }
+                    }
+                  }
+                },
+                "sameAreaClauses": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "areaType": {
+                        "type": "string",
+                        "enum": ["AREA", "AREAS", "RECORD", "RECORDS", "SORT", "SORT-MERGE"]
+                      },
+                      "fileNames": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                      }
+                    }
+                  }
+                },
+                "multipleFileClauses": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "position": { "type": "integer" },
+                      "fileNames": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "dataDivision": {
+      "type": "object",
+      "properties": {
+        "fileSection": {
+          "type": "object",
+          "properties": {
+            "fileDescriptionEntries": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["fileName"],
+                "properties": {
+                  "fileType": {
+                    "type": "string",
+                    "enum": ["FD", "SD"]
+                  },
+                  "fileName": { "type": "string" },
+                  "external": { "type": "boolean" },
+                  "global": { "type": "boolean" },
+                  "blockContains": {
+                    "type": "object",
+                    "properties": {
+                      "from": { "type": "integer" },
+                      "to": { "type": "integer" },
+                      "unit": {
+                        "type": "string",
+                        "enum": ["RECORDS", "CHARACTERS"]
+                      }
+                    }
+                  },
+                  "recordContains": {
+                    "type": "object",
+                    "properties": {
+                      "format": {
+                        "type": "string",
+                        "enum": ["FIXED", "VARYING", "RANGE"]
+                      },
+                      "from": { "type": "integer" },
+                      "to": { "type": "integer" },
+                      "dependingOn": { "type": "string" }
+                    }
+                  },
+                  "labelRecords": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": ["OMITTED", "STANDARD", "DATANAMES"]
+                      },
+                      "dataNames": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                      }
+                    }
+                  },
+                  "dataRecords": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "linage": {
+                    "type": "object",
+                    "properties": {
+                      "linageLines": { "type": ["integer", "string"] },
+                      "footingAt": { "type": ["integer", "string"] },
+                      "linesAtTop": { "type": ["integer", "string"] },
+                      "linesAtBottom": { "type": ["integer", "string"] }
+                    }
+                  },
+                  "codeSet": { "type": "string" },
+                  "reportClause": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "recordingMode": { "type": "string" },
+                  "dataDescriptionEntries": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/dataDescriptionEntry" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "workingStorageSection": {
+          "type": "object",
+          "properties": {
+            "dataDescriptionEntries": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/dataDescriptionEntry" }
+            }
+          }
+        },
+        "linkageSection": {
+          "type": "object",
+          "properties": {
+            "dataDescriptionEntries": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/dataDescriptionEntry" }
+            }
+          }
+        },
+        "communicationSection": {
+          "type": "object",
+          "properties": {
+            "communicationDescriptionEntries": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "cdType": {
+                    "type": "string",
+                    "enum": ["INPUT", "OUTPUT", "I-O", "TERMINAL"]
+                  },
+                  "cdName": { "type": "string" },
+                  "symbolicQueueClause": { "type": "string" },
+                  "symbolicSubQueueClause": { "type": "string" },
+                  "messageDateClause": { "type": "string" },
+                  "messageTimeClause": { "type": "string" },
+                  "symbolicSourceClause": { "type": "string" },
+                  "textLengthClause": { "type": "string" },
+                  "endKeyClause": { "type": "string" },
+                  "statusKeyClause": { "type": "string" },
+                  "messageCountClause": { "type": "string" },
+                  "dataDescriptionEntries": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/dataDescriptionEntry" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "localStorageSection": {
+          "type": "object",
+          "properties": {
+            "dataDescriptionEntries": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/dataDescriptionEntry" }
+            }
+          }
+        },
+        "screenSection": {
+          "type": "object",
+          "properties": {
+            "screenDescriptionEntries": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "level": { "type": "integer" },
+                  "name": { "type": "string" },
+                  "blank": {
+                    "type": "string",
+                    "enum": ["SCREEN", "LINE"]
+                  },
+                  "bell": { "type": "boolean" },
+                  "blink": { "type": "boolean" },
+                  "erase": {
+                    "type": "string",
+                    "enum": ["EOL", "EOS"]
+                  },
+                  "light": { "type": "boolean" },
+                  "grid": { "type": "boolean" },
+                  "reverse": { "type": "boolean" },
+                  "underline": { "type": "boolean" },
+                  "secure": { "type": "boolean" },
+                  "required": { "type": "boolean" },
+                  "full": { "type": "boolean" },
+                  "prompt": {
+                    "type": "object",
+                    "properties": {
+                      "character": { "type": "string" },
+                      "occurs": { "type": "integer" }
+                    }
+                  },
+                  "autoSkip": { "type": "boolean" },
+                  "background": {
+                    "type": "string",
+                    "enum": ["BLACK", "BLUE", "GREEN", "CYAN", "RED", "MAGENTA", "BROWN", "WHITE"]
+                  },
+                  "foreground": {
+                    "type": "string",
+                    "enum": ["BLACK", "BLUE", "GREEN", "CYAN", "RED", "MAGENTA", "BROWN", "WHITE"]
+                  },
+                  "line": { "type": ["integer", "string"] },
+                  "column": { "type": ["integer", "string"] },
+                  "value": { "type": ["string", "number"] },
+                  "picture": { "type": "string" },
+                  "from": { "type": "string" },
+                  "to": { "type": "string" },
+                  "using": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "reportSection": {
+          "type": "object",
+          "properties": {
+            "reportDescriptionEntries": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "reportName": { "type": "string" },
+                  "global": { "type": "boolean" },
+                  "pageLimit": { "type": "integer" },
+                  "heading": { "type": "integer" },
+                  "firstDetail": { "type": "integer" },
+                  "lastDetail": { "type": "integer" },
+                  "footing": { "type": "integer" },
+                  "reportGroups": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "level": { "type": "integer" },
+                        "reportGroupName": { "type": "string" },
+                        "lineNumberNext": { "type": "boolean" },
+                        "lineNumberPlus": { "type": "integer" },
+                        "lineNumber": { "type": "integer" },
+                        "nextGroup": { "type": ["integer", "string"] },
+                        "type": {
+                          "type": "string",
+                          "enum": ["REPORT HEADING", "PAGE HEADING", "CONTROL HEADING", "DETAIL", "CONTROL FOOTING", "PAGE FOOTING", "REPORT FOOTING"]
+                        },
+                        "usage": {
+                          "type": "string",
+                          "enum": ["DISPLAY", "DISPLAY-1"]
+                        },
+                        "picture": { "type": "string" },
+                        "value": { "type": ["string", "number"] },
+                        "sum": {
+                          "type": "array",
+                          "items": { "type": "string" }
+                        },
+                        "resetOn": { "type": "string" },
+                        "column": { "type": "integer" },
+                        "group": { "type": "string" },
+                        "blank": {
+                          "type": "string",
+                          "enum": ["ZERO", "ZEROS", "ZEROES", "SPACE", "SPACES"]
+                        },
+                        "justified": { "type": "boolean" },
+                        "source": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "dataDescriptionEntry": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": ["integer", "string"],
+          "enum": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 66, 77, 88, "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "66", "77", "88"]
+        },
+        "name": { "type": "string" },
+        "redefines": { "type": "string" },
+        "blank": {
+          "type": "string",
+          "enum": ["ZERO", "ZEROS", "ZEROES", "SPACE", "SPACES"]
+        },
+        "external": { "type": "boolean" },
+        "global": { "type": "boolean" },
+        "picture": { "type": "string" },
+        "usage": {
+          "type": "string",
+          "enum": ["BINARY", "COMPUTATIONAL", "COMP", "COMPUTATIONAL-1", "COMP-1", "COMPUTATIONAL-2", "COMP-2", "COMPUTATIONAL-3", "COMP-3", "COMPUTATIONAL-4", "COMP-4", "COMPUTATIONAL-5", "COMP-5", "DISPLAY", "DISPLAY-1", "INDEX", "NATIONAL", "PACKED-DECIMAL", "POINTER"]
+        },
+        "sign": {
+          "type": "object",
+          "properties": {
+            "position": {
+              "type": "string",
+              "enum": ["LEADING", "TRAILING"]
+            },
+            "separate": { "type": "boolean" }
+          }
+        },
+        "occurs": {
+          "type": "object",
+          "properties": {
+            "min": { "type": "integer" },
+            "max": { "type": "integer" },
+            "dependingOn": { "type": "string" },
+            "keys": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ascending": { "type": "boolean" },
+                  "dataNames": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            },
+            "indexes": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "synchronized": {
+          "type": "object",
+          "properties": {
+            "position": {
+              "type": "string",
+              "enum": ["LEFT", "RIGHT"]
+            }
+          }
+        },
+        "justified": { "type": "boolean" },
+        "value": { "type": ["string", "number"] },
+        "renames": {
+          "type": "object",
+          "properties": {
+            "from": { "type": "string" },
+            "to": { "type": "string" }
+          }
+        },
+        "condition": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "value": { "type": ["string", "number", "boolean"] },
+              "through": { "type": ["string", "number"] }
+            }
+          }
+        }
+      }
+    },
+    
+    "procedureDivision": {
+      "type": "object",
+      "properties": {
+        "using": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "byReference": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "optional": { "type": "boolean" },
+                    "identifier": { "type": "string" }
+                  }
+                }
+              },
+              "byValue": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "identifier": { "type": "string" },
+                    "literal": { "type": ["string", "number"] }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "giving": { "type": "string" },
+        "declaratives": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sectionName": { "type": "string" },
+              "useStatement": {
+                "type": "object",
+                "properties": {
+                  "useType": {
+                    "type": "string",
+                    "enum": ["DEBUGGING", "EXCEPTION", "ERROR"]
+                  },
+                  "onFiles": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "onProcedures": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              },
+              "paragraphs": { "$ref": "#/definitions/paragraphs" }
+            }
+          }
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sectionName": { "type": "string" },
+              "priority": { "type": "integer" },
+              "paragraphs": { "$ref": "#/definitions/paragraphs" }
+            }
+          }
+        },
+        "paragraphs": { "$ref": "#/definitions/paragraphs" }
+      }
+    },
+    
+    "paragraphs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "paragraphName": { "type": "string" },
+          "sentences": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/statement" }
+            }
+          }
+        }
+      }
+    },
+    
+    "statement": {
+      "title": "COBOL Statement",
+      "description": "An executable instruction in the Procedure Division that performs operations on data or controls program flow.",
+      "type": "object",
+      "oneOf": [
+        { 
+          "$ref": "#/definitions/acceptStatement",
+          "title": "ACCEPT Statement",
+          "description": "Retrieves data from an input device or system environment variables such as date and time."
+        },
+        { 
+          "$ref": "#/definitions/addStatement",
+          "title": "ADD Statement",
+          "description": "Sums two or more numeric values and stores the result in one or more data items."
+        },
+        { 
+          "$ref": "#/definitions/alterStatement",
+          "title": "ALTER Statement",
+          "description": "Modifies the destination of a GO TO statement (deprecated in modern COBOL)."
+        },
+        { 
+          "$ref": "#/definitions/callStatement",
+          "title": "CALL Statement",
+          "description": "Transfers control to another program and optionally passes parameters."
+        },
+        { 
+          "$ref": "#/definitions/cancelStatement",
+          "title": "CANCEL Statement",
+          "description": "Releases the memory associated with a called subprogram."
+        },
+        { 
+          "$ref": "#/definitions/closeStatement",
+          "title": "CLOSE Statement",
+          "description": "Terminates the processing of files and releases their resources."
+        },
+        { 
+          "$ref": "#/definitions/computeStatement",
+          "title": "COMPUTE Statement",
+          "description": "Assigns the value of an arithmetic expression to one or more data items."
+        },
+        { 
+          "$ref": "#/definitions/continueStatement",
+          "title": "CONTINUE Statement",
+          "description": "A no-operation statement that transfers control to the next statement."
+        },
+        { 
+          "$ref": "#/definitions/deleteStatement",
+          "title": "DELETE Statement",
+          "description": "Removes a record from an indexed or relative file."
+        },
+        { 
+          "$ref": "#/definitions/displayStatement",
+          "title": "DISPLAY Statement",
+          "description": "Outputs data to the standard output device or a specified device."
+        },
+        { 
+          "$ref": "#/definitions/divideStatement",
+          "title": "DIVIDE Statement",
+          "description": "Divides one numeric data item by another and stores the result."
+        },
+        { 
+          "$ref": "#/definitions/evaluateStatement",
+          "title": "EVALUATE Statement",
+          "description": "Executes statements based on multiple conditions (similar to a case or switch statement)."
+        },
+        { 
+          "$ref": "#/definitions/exitStatement",
+          "title": "EXIT Statement",
+          "description": "Provides an end point for a procedure or a means to exit from a nested construct."
+        },
+        { 
+          "$ref": "#/definitions/goToStatement",
+          "title": "GO TO Statement",
+          "description": "Transfers control to a specified paragraph or section."
+        },
+        { 
+          "$ref": "#/definitions/ifStatement",
+          "title": "IF Statement",
+          "description": "Executes statements conditionally based on whether a condition is true or false."
+        },
+        { 
+          "$ref": "#/definitions/initializeStatement",
+          "title": "INITIALIZE Statement",
+          "description": "Sets data items to their default values based on their data types."
+        },
+        { 
+          "$ref": "#/definitions/moveStatement",
+          "title": "MOVE Statement",
+          "description": "Transfers data from one data item to another, with automatic conversion if needed."
+        },
+        { 
+          "$ref": "#/definitions/multiplyStatement",
+          "title": "MULTIPLY Statement",
+          "description": "Multiplies one numeric data item by another and stores the result."
+        },
+        { 
+          "$ref": "#/definitions/openStatement",
+          "title": "OPEN Statement",
+          "description": "Prepares files for processing and establishes the connection between the file and its record area."
+        },
+        { 
+          "$ref": "#/definitions/performStatement",
+          "title": "PERFORM Statement",
+          "description": "Executes a specified procedure or block of code once or multiple times."
+        },
+        { 
+          "$ref": "#/definitions/readStatement",
+          "title": "READ Statement",
+          "description": "Retrieves a record from a file and makes it available in the program's record area."
+        },
+        { 
+          "$ref": "#/definitions/receiveStatement",
+          "title": "RECEIVE Statement",
+          "description": "Retrieves a message or record from a communication device or queue."
+        },
+        { 
+          "$ref": "#/definitions/releaseStatement",
+          "title": "RELEASE Statement",
+          "description": "Transfers a record from the program to the initial phase of a sort operation."
+        },
+        { 
+          "$ref": "#/definitions/returnStatement",
+          "title": "RETURN Statement",
+          "description": "Retrieves a record from the final phase of a sort or merge operation."
+        },
+        { 
+          "$ref": "#/definitions/rewriteStatement",
+          "title": "REWRITE Statement",
+          "description": "Replaces an existing record in a file with a new version."
+        },
+        { 
+          "$ref": "#/definitions/searchStatement",
+          "title": "SEARCH Statement",
+          "description": "Searches a table for an element that satisfies a specified condition."
+        },
+        { 
+          "$ref": "#/definitions/setStatement",
+          "title": "SET Statement",
+          "description": "Establishes references, pointers, or values for table handling or other operations."
+        },
+        { 
+          "$ref": "#/definitions/sortStatement",
+          "title": "SORT Statement",
+          "description": "Sorts records in a specified sequence based on key fields."
+        },
+        { 
+          "$ref": "#/definitions/startStatement",
+          "title": "START Statement",
+          "description": "Positions a file at a specific record based on a key value for subsequent sequential access."
+        },
+        { 
+          "$ref": "#/definitions/stopStatement",
+          "title": "STOP Statement",
+          "description": "Halts program execution either temporarily or permanently."
+        },
+        { 
+          "$ref": "#/definitions/stringStatement",
+          "title": "STRING Statement",
+          "description": "Concatenates the contents of two or more data items into a single data item."
+        },
+        { 
+          "$ref": "#/definitions/subtractStatement",
+          "title": "SUBTRACT Statement",
+          "description": "Subtracts one or more numeric values from another and stores the result."
+        },
+        { 
+          "$ref": "#/definitions/unStringStatement",
+          "title": "UNSTRING Statement",
+          "description": "Splits a string into multiple substrings based on specified delimiters."
+        },
+        { 
+          "$ref": "#/definitions/writeStatement",
+          "title": "WRITE Statement",
+          "description": "Adds a record to a file or sends output to a display device."
+        }
+      ]
+    },
+    
+    "acceptStatement": {
+      "title": "ACCEPT Statement",
+      "description": "Reads data from the keyboard or other input device and stores it in a specified data item.",
+      "type": "object",
+      "properties": {
+        "type": { "const": "ACCEPT" },
+        "identifier": { "type": "string" },
+        "fromDate": { "type": "boolean" },
+        "fromDay": { "type": "boolean" },
+        "fromDayOfWeek": { "type": "boolean" },
+        "fromTime": { "type": "boolean" },
+        "fromConsole": { "type": "boolean" },
+        "fromMnemonicName": { "type": "string" },
+        "fromEnvironmentName": { "type": "string" },
+        "messageCount": { "type": "boolean" },
+        "withNoData": { "type": "boolean" },
+        "withData": { "type": "string" },
+        "atLineColumn": {
+          "type": "object",
+          "properties": {
+            "line": { "type": ["integer", "string"] },
+            "column": { "type": ["integer", "string"] }
+          }
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["BLOCK", "CONVERSION", "NO CONVERSION"]
+        },
+        "size": { "type": ["integer", "string"] },
+        "onException": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/statement" }
+        },
+        "notOnException": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/statement" }
+        }
+      }
+    },
+    
+    "addStatement": {
+      "title": "ADD Statement",
+      "description": "Sums two or more numeric values and stores the result in one or more data items.",
+      "type": "object",
+      "properties": {
+        "type": { "const": "ADD" },
+        "identifier": { "type": "string" },
+        "literal": { "type": ["string", "number"] },
+        "to": { "type": "string" },
+        "giving": { "type": "string" },
+        "rounded": { "type": "boolean" },
+        "sizeError": { "type": "boolean" },
+        "onSizeError": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/statement" }
+        },
+        "notOnSizeError": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/statement" }
+        }
+      }
+    }
+  },
+  
+  "properties": {
+    "programUnits": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/programUnit" }
+    }
+  }
+}
